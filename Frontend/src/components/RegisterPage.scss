@@ -1,0 +1,171 @@
+.register-container {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-size: 16px;
+  justify-content: center;
+  max-width: 1920px;
+  padding: 80px 60px;
+}
+
+@media (max-width: 991px) {
+  .register-container {
+    padding: 0 20px;
+  }
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 60px;
+  max-width: 100%;
+  width: 440px;
+}
+
+@media (max-width: 991px) {
+  .register-form {
+    margin-top: 40px;
+  }
+}
+
+.form-header {
+  font: 600 32px Inter, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .form-header {
+    max-width: 100%;
+  }
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 83px;
+}
+
+@media (max-width: 991px) {
+  .form-fields {
+    margin-top: 40px;
+    max-width: 100%;
+  }
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+}
+
+@media (max-width: 991px) {
+  .input-field {
+    max-width: 100%;
+    white-space: initial;
+  }
+}
+
+.input-label {
+  display: flex;
+  flex-direction: column;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+}
+
+@media (max-width: 991px) {
+  .input-label {
+    max-width: 100%;
+  }
+}
+
+.input-value {
+  align-items: start;
+  background-color: #33394f;
+  border-radius: 8px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 20px 40px;
+}
+
+@media (max-width: 991px) {
+  .input-value {
+    max-width: 100%;
+    padding: 0 20px;
+    white-space: initial;
+  }
+}
+
+.checkbox-container {
+  display: flex;
+  font-weight: 600;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+@media (max-width: 991px) {
+  .checkbox-container {
+    flex-wrap: wrap;
+  }
+}
+
+.checkbox {
+  background-color: #33394f;
+  border-radius: 3px;
+  height: 25px;
+  width: 25px;
+}
+
+.checkbox.checked {
+  background-color: var(--Brand-Color-additional-001, #a296bd);
+}
+
+.checkbox-label {
+  font-family: Inter, sans-serif;
+  margin: auto 0;
+}
+
+.register-button {
+  align-items: center;
+  background-color: var(--Brand-Color-additional-001, #a296bd);
+  border-radius: 6px;
+  color: #202433;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 25px;
+  white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+  .register-button {
+    max-width: 100%;
+    padding: 0 20px;
+    white-space: initial;
+  }
+}
+
+.form-footer {
+  color: var(--Brand-Color-additional-001, #a296bd);
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  margin-top: 55px;
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  .form-footer {
+    margin-top: 40px;
+    max-width: 100%;
+  }
+}
+
+.login-link {
+  color: var(--Brand-Color-additional-001, #a296bd);
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  margin-top: 55px;
+  text-align: center;
+}
