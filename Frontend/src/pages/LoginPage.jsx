@@ -1,34 +1,48 @@
 import * as React from "react";
 import "../components/LoginPage.scss";
-import { Link } from "react-router-dom";
-import RegisterPage from "./RegisterPage";
+import { Link, useNavigate } from "react-router-dom";
+import InputField from "../components/InputField";
+import { useState } from "react";
+import { useUser } from "../Contexts/UserContext";
 function LoginForm() {
+  const { loginUser } = useUser();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    try {
+      const success = await loginUser(email, password);
+      if (success) {
+        navigate("/threads");
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setError("Login failed due to server error.");
+    }
+  };
+
   return (
-    <form className="login-form">
-      <div className="form-group">
-        <label htmlFor="email" className="form-label">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          className="form-input"
-          placeholder="yayan@durian.cc"
-        />
-      </div>
-      <div className="form-group">
-        <div className="form-label-row">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-        </div>
-        <input
-          type="password"
-          id="password"
-          className="form-input"
-          placeholder="••••••••••••••••••••••"
-        />
-      </div>
+    <form onSubmit={handleLogin} className="login-form">
+      <InputField
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <InputField
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
       <button type="submit" className="login-button">
         Login
       </button>
