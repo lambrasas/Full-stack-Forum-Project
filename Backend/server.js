@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const User = require("./Schemas/UserSchema.js");
+const Thread = require("./Schemas/ThreadSchema.js");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
@@ -64,7 +65,37 @@ app.post("/login", async (req, res) => {
     res.status(500).send("Server error during authentication.");
   }
 });
+app.post("/add/thread", async (req, res) => {
+  const { title, content, userId } = req.body;
 
+  if (!title || !content || !userId) {
+    return res
+      .status(400)
+      .send("Missing title, content, or user ID. All fields are required.");
+  }
+
+  try {
+    const userExists = await User.exists({ _id: userId });
+    if (!userExists) {
+      return res.status(404).send("User not found.");
+    }
+
+    const newThread = new Thread({
+      userId,
+      title,
+      content,
+    });
+
+    const savedThread = await newThread.save();
+    res.status(201).json({
+      message: "Thread created successfully",
+      thread: savedThread,
+    });
+  } catch (error) {
+    console.error("Error creating a new thread: ", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 app.listen(port, () => {
   console.log(`Server is running on ${port} port`);
 });
