@@ -5,6 +5,7 @@ const cors = require("cors");
 const User = require("./Schemas/UserSchema.js");
 const Thread = require("./Schemas/ThreadSchema.js");
 const bcrypt = require("bcryptjs");
+const validator = require("validator");
 require("dotenv").config();
 
 const app = express();
@@ -24,6 +25,21 @@ mongoose
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
+  if (!validator.isEmail(email)) {
+    console.log("Failed email validation");
+    return res.status(400).send("Invalid email format.");
+  }
+
+  const passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    console.log("Failed password validation");
+    return res
+      .status(400)
+      .send(
+        "Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character."
+      );
+  }
   try {
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
@@ -84,6 +100,8 @@ app.post("/add/thread", async (req, res) => {
       userId,
       title,
       content,
+      likes: [],
+      dislikes: [],
     });
 
     const savedThread = await newThread.save();
@@ -93,6 +111,82 @@ app.post("/add/thread", async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating a new thread: ", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.get("/get/threads", async (req, res) => {
+  try {
+    const threads = await Thread.find()
+      .populate("userId", "name")
+      .sort({ createdDate: -1 });
+    res.json(threads);
+  } catch (error) {
+    console.error("Failed to fetch threads:", error);
+    res.status(500).send("Failed to fetch threads");
+  }
+});
+app.get("/get/thread/:id", async (req, res) => {
+  try {
+    const thread = await Thread.findById(req.params.id).populate(
+      "userId",
+      "name"
+    );
+    if (!thread) {
+      return res.status(404).send("Thread not found");
+    }
+    res.json(thread);
+  } catch (error) {
+    console.error("Failed to fetch thread:", error);
+    res.status(500).send("Server error during fetching thread");
+  }
+});
+app.patch("/like-thread/:id", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const thread = await Thread.findById(req.params.id);
+    if (!thread) {
+      return res.status(404).send("Thread not found");
+    }
+    const likedIndex = thread.likes.indexOf(userId);
+    const dislikedIndex = thread.dislikes.indexOf(userId);
+
+    if (likedIndex === -1) {
+      if (dislikedIndex !== -1) {
+        thread.dislikes.splice(dislikedIndex, 1);
+      }
+      thread.likes.push(userId);
+    }
+
+    await thread.save();
+    res.status(200).json(thread);
+  } catch (error) {
+    console.error("Error liking thread: ", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.patch("/dislike-thread/:id", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const thread = await Thread.findById(req.params.id);
+    if (!thread) {
+      return res.status(404).send("Thread not found");
+    }
+    const likedIndex = thread.likes.indexOf(userId);
+    const dislikedIndex = thread.dislikes.indexOf(userId);
+
+    if (dislikedIndex === -1) {
+      if (likedIndex !== -1) {
+        thread.likes.splice(likedIndex, 1);
+      }
+      thread.dislikes.push(userId);
+    }
+
+    await thread.save();
+    res.status(200).json(thread);
+  } catch (error) {
+    console.error("Error disliking thread:", error);
     res.status(500).send("Internal Server Error");
   }
 });

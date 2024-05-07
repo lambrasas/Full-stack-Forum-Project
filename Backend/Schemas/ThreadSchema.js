@@ -8,8 +8,10 @@ const threadSchema = new mongoose.Schema({
   },
   title: { type: String, required: true },
   content: { type: String, required: true },
-  like: { type: Number, default: 0 },
-  dislike: { type: Number, default: 0 },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
+  dislikes: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] },
+  ],
   createdDate: {
     type: Date,
     default: Date.now,
