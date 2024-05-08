@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
-import InputField from "../components/InputField";
+import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ThreadComponent from "../components/ThreadComponent";
 import { Link } from "react-router-dom";
+import styles from "../components/ThreadsPage.module.scss";
 const ThreadsPage = () => {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ const ThreadsPage = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div>
+    <div className={styles.threadsPageContainer}>
       <div>
         <button>
           <Link
@@ -45,9 +45,11 @@ const ThreadsPage = () => {
           </Link>
         </button>
       </div>
-      {threads.map((thread) => (
-        <ThreadComponent key={thread._id} thread={thread} />
-      ))}
+      <div className={styles.threadsListContainer}>
+        {threads.map((thread) => (
+          <ThreadComponent key={thread._id} thread={thread} />
+        ))}
+      </div>
     </div>
   );
 };

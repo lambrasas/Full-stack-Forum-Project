@@ -3,6 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ThreadsPage from "./pages/ThreadsPage";
 import CreateThreadPage from "./pages/CreateThreadPage";
+import ViewThreadPage from "./pages/ViewThreadPage";
 const App = () => {
   return (
     <Router>
@@ -11,6 +12,7 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/threads" element={<ThreadsPage />} />
         <Route path="/create-thread" element={<CreateThreadPage />} />
+        <Route path="/thread/:threadId" element={<ViewThreadPage />} />
       </Routes>
     </Router>
   );
