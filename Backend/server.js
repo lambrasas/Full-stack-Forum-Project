@@ -140,6 +140,7 @@ app.get("/get/thread/:id", async (req, res) => {
     res.status(500).send("Server error during fetching thread");
   }
 });
+
 app.patch("/like-thread/:id", async (req, res) => {
   const { userId } = req.body;
 
