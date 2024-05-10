@@ -12,10 +12,8 @@ const threadSchema = new mongoose.Schema({
   dislikes: [
     { type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] },
   ],
-  createdDate: {
-    type: Date,
-    default: Date.now,
-  },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+  createdDate: { type: Date, default: Date.now },
   editedStatus: { type: Boolean, default: false },
 });
 

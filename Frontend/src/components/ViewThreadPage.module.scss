@@ -1,0 +1,21 @@
+.commmentsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 25px;
+}
+.threadCard {
+  background-color: #252d3a;
+  border-radius: 10px;
+  box-shadow: 20px 20px 10px #12151d;
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.linkContainer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin: 10px 50px 0 0;
+}

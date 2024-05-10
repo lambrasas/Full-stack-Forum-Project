@@ -51,8 +51,25 @@ const CreateThreadPage = () => {
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button onClick={() => navigate("/threads")}>Back to threads</button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          margin: " 10px 50px 0 0",
+        }}
+      >
+        <button
+          style={{
+            color: "white",
+            background: "#7299e1",
+            border: "none",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+          onClick={() => navigate("/threads")}
+        >
+          Back to threads
+        </button>
       </div>
 
       <form
