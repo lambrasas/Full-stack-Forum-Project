@@ -35,10 +35,10 @@ const ThreadsPage = () => {
 
   return (
     <div className={styles.threadsPageContainer}>
-      <div>
-        <button>
+      <div className={styles.createThreadButtonContainer}>
+        <button className={styles.link}>
           <Link
-            style={{ textDecoration: "none", color: "white" }}
+            style={{ color: "white", fontWeight: "600" }}
             to="/create-thread"
           >
             Create new thread

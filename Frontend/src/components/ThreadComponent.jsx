@@ -4,42 +4,60 @@ import { format } from "date-fns";
 import PropTypes from "prop-types";
 import { useUser } from "../Contexts/UserContext";
 import styles from "../components/ThreadComponent.module.scss";
+
 const ThreadComponent = ({ thread }) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [threadState, setThreadState] = useState({
-    likes: thread.likes.length,
-    dislikes: thread.dislikes.length,
+    likes: thread.likes,
+    dislikes: thread.dislikes,
     userLiked: thread.likes.includes(user?._id),
     userDisliked: thread.dislikes.includes(user?._id),
   });
 
   useEffect(() => {
     setThreadState({
-      likes: thread.likes.length,
-      dislikes: thread.dislikes.length,
+      likes: thread.likes,
+      dislikes: thread.dislikes,
       userLiked: thread.likes.includes(user?._id),
       userDisliked: thread.dislikes.includes(user?._id),
     });
   }, [thread, user?._id]);
 
-  const handleLike = async () => {
+  const handleInteraction = async (like) => {
     if (!user) {
-      alert("You must be logged in to like a thread.");
+      alert("You must be logged in to react to a thread.");
       return;
     }
-    setThreadState((prevState) => ({
-      ...prevState,
-      likes: prevState.userLiked ? prevState.likes : prevState.likes + 1,
-      dislikes: prevState.userDisliked
-        ? prevState.dislikes - 1
-        : prevState.dislikes,
-      userLiked: true,
-      userDisliked: false,
-    }));
+
+    const actionType = like ? "like" : "dislike";
+    const updatedLikes = new Set(threadState.likes);
+    const updatedDislikes = new Set(threadState.dislikes);
+
+    if (like && updatedLikes.has(user._id)) {
+      updatedLikes.delete(user._id);
+    } else if (!like && updatedDislikes.has(user._id)) {
+      updatedDislikes.delete(user._id);
+    } else {
+      if (like) {
+        updatedLikes.add(user._id);
+        updatedDislikes.delete(user._id);
+      } else {
+        updatedDislikes.add(user._id);
+        updatedLikes.delete(user._id);
+      }
+    }
+
+    setThreadState({
+      likes: Array.from(updatedLikes),
+      dislikes: Array.from(updatedDislikes),
+      userLiked: updatedLikes.has(user._id),
+      userDisliked: updatedDislikes.has(user._id),
+    });
+
     try {
       const response = await fetch(
-        `http://localhost:3000/like-thread/${thread._id}`,
+        `http://localhost:3000/${actionType}-thread/${thread._id}`,
         {
           method: "PATCH",
           headers: {
@@ -50,109 +68,69 @@ const ThreadComponent = ({ thread }) => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to like the thread on the server.");
+        throw new Error(`Failed to ${actionType} the thread on the server.`);
       }
     } catch (error) {
-      console.error("Failed to like the thread:", error);
+      console.error(`Error in ${actionType}ing the thread:`, error);
+      setThreadState({
+        likes: thread.likes,
+        dislikes: thread.dislikes,
+        userLiked: thread.likes.includes(user?._id),
+        userDisliked: thread.dislikes.includes(user?._id),
+      });
     }
   };
-
-  const handleDislike = async () => {
-    if (!user) {
-      alert("You must be logged in to dislike a thread.");
-      return;
-    }
-    setThreadState((prevState) => ({
-      ...prevState,
-      likes: prevState.userLiked ? prevState.likes - 1 : prevState.likes,
-      dislikes: prevState.userDisliked
-        ? prevState.dislikes
-        : prevState.dislikes + 1,
-      userLiked: false,
-      userDisliked: true,
-    }));
-    try {
-      const response = await fetch(
-        `http://localhost:3000/dislike-thread/${thread._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId: user._id }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to dislike the thread on the server.");
-      }
-    } catch (error) {
-      console.error("Failed to dislike the thread:", error);
-    }
+  const truncateContent = (content, length = 100) => {
+    return content.length > length
+      ? content.substring(0, length) + "..."
+      : content;
   };
+  if (!thread) return <p>No thread found</p>;
 
   return (
     <div className={styles.threadCard}>
-      <div>
-        <h1
-          onClick={() => navigate(`/thread/${thread._id}`)}
-          style={{ cursor: "pointer", width: "fit-content" }}
-        >
-          {thread.title}
-        </h1>
-      </div>
       <div className={styles.nameDateContainer}>
-        <p className={`${styles.name} ${styles.nameDate}`}>
-          {thread.userId.name}
-        </p>
-        <p className={`${styles.date} ${styles.nameDate}`}>
+        <p className={styles.name}>{thread.userId.name}</p>
+        <p className={styles.date}>
           {format(new Date(thread.createdDate), "dd/MM/yyyy")}
         </p>
       </div>
-      <div className={styles.content}>
-        {thread.content.substring(0, 100)}...
-      </div>
+      <h1
+        className={styles.title}
+        onClick={() => navigate(`/thread/${thread._id}`)}
+      >
+        {thread.title}
+      </h1>
+      <p className={styles.content}>{truncateContent(thread.content)}</p>
       <div className={styles.buttonsContainer}>
         <button
-          className={styles.addCommentButton}
-          onClick={() => navigate(`/thread/${thread._id}`)}
+          style={{
+            backgroundColor: threadState.userLiked ? "green" : "gray",
+            border: "none",
+            padding: "1px 5px",
+            borderRadius: "5px",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleInteraction(true);
+          }}
         >
-          <svg
-            width="16"
-            height="14"
-            viewBox="0 0 16 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M8 0C3.58125 0 0 2.90937 0 6.5C0 6.87046 0.0382008 7.23341 0.111531 7.58653C0.550753 9.70157 1.59622 12.0507 0.06875 13.5781C0 13.65 -0.01875 13.7563 0.021875 13.85C0.0625 13.9438 0.15 14 0.25 14C0.720918 14 1.16504 13.9487 1.57924 13.8621C3.66095 13.4272 5.87335 13 8 13C12.4187 13 16 10.0906 16 6.5C16 2.90937 12.4187 0 8 0Z"
-              fill="#33394F"
-            />
-          </svg>
-          Add comment
+          👍 {threadState.likes.length}
         </button>
-        <div className={styles.likeDislikeContainer}>
-          <button
-            style={{
-              backgroundColor: threadState.userLiked ? "green" : "none",
-              border: "none",
-              borderRadius: "5px",
-            }}
-            onClick={handleLike}
-          >
-            👍 {threadState.likes}
-          </button>
-          <button
-            style={{
-              backgroundColor: threadState.userDisliked ? "red" : "none",
-              border: "none",
-              borderRadius: "5px",
-            }}
-            onClick={handleDislike}
-          >
-            👎 {threadState.dislikes}
-          </button>
-        </div>
+        <button
+          style={{
+            backgroundColor: threadState.userDisliked ? "red" : "gray",
+            border: "none",
+            padding: "1px 5px",
+            borderRadius: "5px",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleInteraction(false);
+          }}
+        >
+          👎 {threadState.dislikes.length}
+        </button>
       </div>
     </div>
   );

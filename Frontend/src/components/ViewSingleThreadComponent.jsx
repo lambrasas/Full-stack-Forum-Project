@@ -8,8 +8,11 @@ const ViewSingleThreadComponent = () => {
   const { threadId } = useParams();
   const { user } = useUser();
   const [thread, setThread] = useState(null);
+  const [userLiked, setUserLiked] = useState(false);
+  const [userDisliked, setUserDisliked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   useEffect(() => {
     if (!threadId) {
       console.error("Thread ID is undefined");
@@ -27,6 +30,8 @@ const ViewSingleThreadComponent = () => {
         }
         const data = await response.json();
         setThread(data);
+        setUserLiked(data.likes.includes(user?._id));
+        setUserDisliked(data.dislikes.includes(user?._id));
       } catch (error) {
         console.error("Error:", error);
         setError(error.message);
@@ -35,22 +40,24 @@ const ViewSingleThreadComponent = () => {
       }
     };
     fetchThread();
-  }, [threadId]);
+  }, [threadId, user?._id]);
 
   const handleLikeDislike = async (like = true) => {
     if (!user) {
       alert("You must be logged in to like or dislike a thread.");
       return;
     }
+    if ((like && userLiked) || (!like && userDisliked)) {
+      return;
+    }
+
     try {
       const url = `http://localhost:3000/${like ? "like" : "dislike"}-thread/${
         thread._id
       }`;
       const response = await fetch(url, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user._id }),
       });
 
@@ -60,12 +67,9 @@ const ViewSingleThreadComponent = () => {
         );
       }
       const updatedThreadData = await response.json();
-
-      setThread((prevThread) => ({
-        ...prevThread,
-        likes: updatedThreadData.likes,
-        dislikes: updatedThreadData.dislikes,
-      }));
+      setThread(updatedThreadData);
+      setUserLiked(like);
+      setUserDisliked(!like);
     } catch (error) {
       console.error(
         `Failed to ${like ? "like" : "dislike"} the thread:`,
@@ -79,17 +83,41 @@ const ViewSingleThreadComponent = () => {
   if (!thread) return <p>No thread found</p>;
 
   return (
-    <div className={styles.threadDetails}>
-      <h1>{thread.title}</h1>
-      <p>Posted by: {thread.userId.name}</p>
-      <p>Date: {format(new Date(thread.createdDate), "dd/MM/yyyy")}</p>
-      <div>{thread.content}</div>
-      <div className={styles.actions}>
-        <button onClick={() => handleLikeDislike(true)}>
-          👍 Like ({thread.likes.length})
+    <div className={styles.singleThreadContainer}>
+      <div className={styles.nameDateContainer}>
+        <p className={styles.name}>{thread.userId.name}</p>
+        <p className={styles.date}>
+          {format(new Date(thread.createdDate), "dd/MM/yyyy")}
+        </p>
+      </div>
+      <div className={styles.titleContainer}>
+        <h1>{thread.title}</h1>
+      </div>
+      <div className={styles.contentContainer}>{thread.content}</div>
+      <div className={styles.reactButtonsContainer}>
+        <button
+          className={styles.reactButton}
+          style={{
+            backgroundColor: userLiked ? "green" : undefined,
+            border: "none",
+            padding: "1px 5px",
+            borderRadius: "5px",
+          }}
+          onClick={() => handleLikeDislike(true)}
+        >
+          👍 {thread.likes.length}
         </button>
-        <button onClick={() => handleLikeDislike(false)}>
-          👎 Dislike ({thread.dislikes.length})
+        <button
+          className={styles.reactButton}
+          style={{
+            backgroundColor: userDisliked ? "red" : undefined,
+            border: "none",
+            padding: "1px 5px",
+            borderRadius: "5px",
+          }}
+          onClick={() => handleLikeDislike(false)}
+        >
+          👎 {thread.dislikes.length}
         </button>
       </div>
     </div>

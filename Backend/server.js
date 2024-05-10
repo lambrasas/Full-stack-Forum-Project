@@ -6,6 +6,8 @@ const User = require("./Schemas/UserSchema.js");
 const Thread = require("./Schemas/ThreadSchema.js");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
+const Comment = require("./Schemas/CommentSchema.js");
+
 require("dotenv").config();
 
 const app = express();
@@ -191,6 +193,92 @@ app.patch("/dislike-thread/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+app.post("/comments", async (req, res) => {
+  const { content, threadId, userId, parentId = null } = req.body;
+
+  const userExists = await User.exists({ _id: userId });
+  if (!userExists) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User does not exist." });
+  }
+
+  try {
+    const newComment = new Comment({
+      content,
+      userId,
+      threadId,
+      parentId,
+      likes: [],
+      dislikes: [],
+    });
+
+    await newComment.save();
+
+    await Thread.findByIdAndUpdate(threadId, {
+      $push: { comments: newComment._id },
+    });
+
+    res.status(201).json(newComment);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
+app.patch("/comments/:commentId/like", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).send("Comment not found.");
+
+    if (!comment.likes.includes(userId)) {
+      comment.likes.push(userId);
+      comment.dislikes = comment.dislikes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      await comment.save();
+    }
+
+    res.status(200).json(comment);
+  } catch (error) {
+    console.error("Error liking comment:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.patch("/comments/:commentId/dislike", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).send("Comment not found.");
+
+    if (!comment.dislikes.includes(userId)) {
+      comment.dislikes.push(userId);
+      comment.likes = comment.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      await comment.save();
+    }
+
+    res.status(200).json(comment);
+  } catch (error) {
+    console.error("Error disliking comment:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.get("/comments/:threadId", async (req, res) => {
+  try {
+    const comments = await Comment.find({
+      threadId: req.params.threadId,
+    }).populate("userId", "name _id");
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on ${port} port`);
 });
