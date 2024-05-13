@@ -278,7 +278,48 @@ app.get("/comments/:threadId", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+app.delete("/delete-thread/:id", async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const thread = await Thread.findById(req.params.id);
+    if (!thread) {
+      return res.status(404).send("Thread not found");
+    }
+    if (thread.userId.toString() !== userId.toString()) {
+      return res
+        .status(401)
+        .send("Unauthorized: You can only delete your own threads.");
+    }
 
+    await Thread.findByIdAndDelete(req.params.id);
+    res.status(200).send("Thread deleted successfully");
+  } catch (error) {
+    console.error("Error deleting thread:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.delete("/comments/:commentId", async (req, res) => {
+  const { userId } = req.body;
+  const { commentId } = req.params;
+
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).send("Comment not found.");
+    }
+    if (comment.userId.toString() !== userId.toString()) {
+      return res
+        .status(401)
+        .send("Unauthorized: You can only delete your own comments.");
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+    res.status(200).send("Comment deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 app.listen(port, () => {
   console.log(`Server is running on ${port} port`);
 });

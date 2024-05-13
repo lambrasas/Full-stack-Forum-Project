@@ -53,7 +53,11 @@ const ViewThreadPage = () => {
   const handleCommentAdded = (newComment) => {
     setComments((prevComments) => [newComment, ...prevComments]);
   };
-
+  const handleCommentDelete = (commentId) => {
+    setComments((currentComments) =>
+      currentComments.filter((c) => c._id !== commentId)
+    );
+  };
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -83,7 +87,11 @@ const ViewThreadPage = () => {
           />
           <div className={styles.commmentsContainer}>
             {comments.map((comment) => (
-              <Comment key={comment._id} comment={comment} />
+              <Comment
+                key={comment._id}
+                comment={comment}
+                onDelete={handleCommentDelete}
+              />
             ))}
           </div>
         </div>
