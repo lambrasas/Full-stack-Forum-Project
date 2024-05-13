@@ -29,7 +29,9 @@ const ThreadsPage = () => {
 
     fetchThreads();
   }, []);
-
+  const handleThreadDelete = (threadId) => {
+    setThreads(threads.filter((thread) => thread._id !== threadId));
+  };
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
@@ -47,7 +49,11 @@ const ThreadsPage = () => {
       </div>
       <div className={styles.threadsListContainer}>
         {threads.map((thread) => (
-          <ThreadComponent key={thread._id} thread={thread} />
+          <ThreadComponent
+            key={thread._id}
+            thread={thread}
+            onDelete={handleThreadDelete}
+          />
         ))}
       </div>
     </div>

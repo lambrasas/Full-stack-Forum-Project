@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { useUser } from "../Contexts/UserContext";
 import styles from "../components/ThreadComponent.module.scss";
 
-const ThreadComponent = ({ thread }) => {
+const ThreadComponent = ({ thread, onDelete }) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [threadState, setThreadState] = useState({
@@ -80,6 +80,32 @@ const ThreadComponent = ({ thread }) => {
       });
     }
   };
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this thread?")) {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/delete-thread/${thread._id}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId: user._id }),
+          }
+        );
+
+        if (response.ok) {
+          onDelete(thread._id);
+          alert("Thread deleted successfully.");
+        } else {
+          throw new Error("Failed to delete the thread.");
+        }
+      } catch (error) {
+        console.error("Error deleting the thread:", error);
+        alert(error.message);
+      }
+    }
+  };
   const truncateContent = (content, length = 100) => {
     return content.length > length
       ? content.substring(0, length) + "..."
@@ -131,6 +157,20 @@ const ThreadComponent = ({ thread }) => {
         >
           👎 {threadState.dislikes.length}
         </button>
+        {user && user._id === thread.userId._id && (
+          <button
+            style={{
+              backgroundColor: "red",
+              border: "none",
+              padding: "1px 5px",
+              borderRadius: "5px",
+              marginLeft: "10px",
+            }}
+            onClick={handleDelete}
+          >
+            Delete
+          </button>
+        )}
       </div>
     </div>
   );
