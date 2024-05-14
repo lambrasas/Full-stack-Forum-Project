@@ -85,21 +85,34 @@ const CreateThreadPage = () => {
           label="Title"
           type="text"
           value={title}
+          maxLength={100}
           style={{ width: "75%", maxWidth: "1000px" }}
           onChange={(e) => setTitle(e.target.value)}
         />
+        <div>{`${title.length} / 100 characters`}</div>
         <InputField
           label="Content"
           type="text"
           value={content}
           inputType="textarea"
           rows={10}
-          maxLength={500}
+          maxLength={1000}
           style={{ width: "75%", maxWidth: "1000px" }}
           onChange={(e) => setContent(e.target.value)}
         />
-        <div>{`${content.length} / 500 characters`}</div>
-        <button type="submit">Post</button>
+        <div>{`${content.length} / 1000 characters`}</div>
+        <button
+          style={{
+            color: "white",
+            background: "#7299e1",
+            border: "none",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+          type="submit"
+        >
+          Post
+        </button>
         {message && (
           <div style={{ marginTop: "10px", color: "red" }}>{message}</div>
         )}

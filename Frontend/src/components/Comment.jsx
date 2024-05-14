@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { format } from "date-fns";
 import { useUser } from "../Contexts/UserContext";
-import styles from "../components/Comment.module.scss";
+import styles from "./Comment.module.scss";
+import EditableContent from "./EditableContent";
 
-const Comment = ({ comment, onDelete }) => {
+const Comment = ({ comment, onDelete, onSave }) => {
   const { user } = useUser();
   const [likes, setLikes] = useState(comment.likes.length);
   const [dislikes, setDislikes] = useState(comment.dislikes.length);
@@ -12,6 +13,8 @@ const Comment = ({ comment, onDelete }) => {
   const [userDisliked, setUserDisliked] = useState(
     comment.dislikes.includes(user?._id)
   );
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
 
   useEffect(() => {
     setUserLiked(comment.likes.includes(user?._id));
@@ -19,6 +22,10 @@ const Comment = ({ comment, onDelete }) => {
   }, [comment, user?._id]);
 
   const handleLike = async () => {
+    if (!user) {
+      alert("You must be logged in to react to a comment.");
+      return;
+    }
     if (!userLiked) {
       try {
         const response = await fetch(
@@ -45,6 +52,10 @@ const Comment = ({ comment, onDelete }) => {
   };
 
   const handleDislike = async () => {
+    if (!user) {
+      alert("You must be logged in to react to a comment.");
+      return;
+    }
     if (!userDisliked) {
       try {
         const response = await fetch(
@@ -69,6 +80,45 @@ const Comment = ({ comment, onDelete }) => {
       }
     }
   };
+
+  const handleEdit = () => {
+    if (user && user._id === comment.userId._id) {
+      setIsEditing(true);
+    }
+  };
+
+  const handleSave = async () => {
+    if (editContent !== comment.content) {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/comments/${comment._id}/edit`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId: user._id, content: editContent }),
+          }
+        );
+        if (response.ok) {
+          const updatedComment = await response.json();
+          onSave(updatedComment);
+          setIsEditing(false);
+        } else {
+          throw new Error("Failed to update comment.");
+        }
+      } catch (error) {
+        console.error("Error updating comment:", error);
+        alert("Failed to update comment.");
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditContent(comment.content);
+  };
+
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this comment?")) {
       try {
@@ -102,7 +152,26 @@ const Comment = ({ comment, onDelete }) => {
         <span style={{ opacity: 0.5, fontSize: "13px" }}>
           {format(new Date(comment.createdDate), "dd/MM/yyyy")}
         </span>
-        <p>{comment.content}</p>
+        {comment.editedStatus && (
+          <span
+            style={{
+              fontStyle: "italic",
+              fontSize: "12px",
+              marginLeft: "10px",
+            }}
+          >
+            (Edited)
+          </span>
+        )}
+        {isEditing ? (
+          <EditableContent
+            content={comment.content}
+            onSave={handleSave}
+            maxLength={500}
+          />
+        ) : (
+          <p>{comment.content}</p>
+        )}
       </div>
 
       <div
@@ -174,8 +243,10 @@ Comment.propTypes = {
     createdDate: PropTypes.string.isRequired,
     likes: PropTypes.arrayOf(PropTypes.string),
     dislikes: PropTypes.arrayOf(PropTypes.string),
+    editedStatus: PropTypes.bool,
   }).isRequired,
   onDelete: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
 };
 
 export default Comment;

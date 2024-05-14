@@ -145,54 +145,52 @@ app.get("/get/thread/:id", async (req, res) => {
 
 app.patch("/like-thread/:id", async (req, res) => {
   const { userId } = req.body;
-
   try {
     const thread = await Thread.findById(req.params.id);
     if (!thread) {
       return res.status(404).send("Thread not found");
     }
-    const likedIndex = thread.likes.indexOf(userId);
-    const dislikedIndex = thread.dislikes.indexOf(userId);
-
-    if (likedIndex === -1) {
-      if (dislikedIndex !== -1) {
-        thread.dislikes.splice(dislikedIndex, 1);
-      }
+    if (!thread.likes.includes(userId)) {
       thread.likes.push(userId);
+      if (thread.dislikes.includes(userId)) {
+        thread.dislikes.splice(thread.dislikes.indexOf(userId), 1);
+      }
+      await thread.save();
     }
-
-    await thread.save();
-    res.status(200).json(thread);
+    const updatedThread = await Thread.findById(req.params.id).populate(
+      "userId"
+    );
+    res.status(200).json(updatedThread);
   } catch (error) {
     console.error("Error liking thread: ", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 app.patch("/dislike-thread/:id", async (req, res) => {
   const { userId } = req.body;
-
   try {
     const thread = await Thread.findById(req.params.id);
     if (!thread) {
       return res.status(404).send("Thread not found");
     }
-    const likedIndex = thread.likes.indexOf(userId);
-    const dislikedIndex = thread.dislikes.indexOf(userId);
-
-    if (dislikedIndex === -1) {
-      if (likedIndex !== -1) {
-        thread.likes.splice(likedIndex, 1);
-      }
+    if (!thread.dislikes.includes(userId)) {
       thread.dislikes.push(userId);
+      if (thread.likes.includes(userId)) {
+        thread.likes.splice(thread.likes.indexOf(userId), 1);
+      }
+      await thread.save();
     }
-
-    await thread.save();
-    res.status(200).json(thread);
+    const updatedThread = await Thread.findById(req.params.id).populate(
+      "userId"
+    );
+    res.status(200).json(updatedThread);
   } catch (error) {
     console.error("Error disliking thread:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 app.post("/comments", async (req, res) => {
   const { content, threadId, userId, parentId = null } = req.body;
 
@@ -317,6 +315,44 @@ app.delete("/comments/:commentId", async (req, res) => {
     res.status(200).send("Comment deleted successfully.");
   } catch (error) {
     console.error("Error deleting comment:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.patch("/threads/:threadId/edit", async (req, res) => {
+  const { content } = req.body;
+  try {
+    const updatedThread = await Thread.findByIdAndUpdate(
+      req.params.threadId,
+      { $set: { content: content, editedStatus: true } },
+      { new: true }
+    );
+    if (!updatedThread) {
+      return res.status(404).json({ error: "Thread not found" });
+    }
+    res.json(updatedThread);
+  } catch (error) {
+    console.error("Update thread error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.patch("/comments/:id/edit", async (req, res) => {
+  const { content, userId } = req.body;
+  const { id } = req.params;
+
+  try {
+    const comment = await Comment.findById(id);
+    if (!comment) return res.status(404).send("Comment not found.");
+    if (comment.userId.toString() !== userId)
+      return res.status(401).send("Unauthorized.");
+
+    comment.content = content;
+    comment.editedStatus = true;
+    await comment.save();
+
+    res.json(comment);
+  } catch (error) {
+    console.error("Failed to edit comment:", error);
     res.status(500).send("Internal Server Error");
   }
 });

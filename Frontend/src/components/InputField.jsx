@@ -32,7 +32,7 @@ const InputField = ({
             value={value}
             rows={rows}
             maxLength={maxLength}
-            style={{ resize: "none" }}
+            style={{ resize: "none", padding: "10px 0 0 10px" }}
             placeholder={placeholder}
           ></textarea>
         )}
