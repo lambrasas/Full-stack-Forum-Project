@@ -9,6 +9,7 @@ const commentSchema = new Schema({
   likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   dislikes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   createdDate: { type: Date, default: Date.now },
+  editedStatus: { type: Boolean, default: false },
 });
 
 const Comment = mongoose.model("Comment", commentSchema);
