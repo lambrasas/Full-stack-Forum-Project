@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "../components/InputField";
 import { useUser } from "../Contexts/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +9,13 @@ const CreateThreadPage = () => {
   const { user } = useUser();
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (!user) {
+      console.log("No user found, redirecting to login page.");
+      navigate("/");
+      return;
+    }
+  });
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!user) {

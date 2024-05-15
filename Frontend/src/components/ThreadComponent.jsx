@@ -4,9 +4,7 @@ import { format } from "date-fns";
 import PropTypes from "prop-types";
 import { useUser } from "../Contexts/UserContext";
 import styles from "./ThreadComponent.module.scss";
-import EditableContent from "./EditableContent";
 import truncateText from "./truncateText";
-import FilterDropdown from "./FilterDropdown";
 
 const ThreadComponent = ({ thread, onDelete, truncate }) => {
   const navigate = useNavigate();
@@ -20,6 +18,7 @@ const ThreadComponent = ({ thread, onDelete, truncate }) => {
     editedStatus: thread.editedStatus,
   });
   const [comments, setComments] = useState([]);
+
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -34,6 +33,7 @@ const ThreadComponent = ({ thread, onDelete, truncate }) => {
     };
     fetchComments();
   }, [thread]);
+
   useEffect(() => {
     setThreadState((prevState) => ({
       ...prevState,
@@ -103,31 +103,6 @@ const ThreadComponent = ({ thread, onDelete, truncate }) => {
     }
   };
 
-  const handleContentSave = (newContent) => {
-    fetch(`http://localhost:3000/threads/${thread._id}/edit`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user._id, content: newContent }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to save changes");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setThreadState((prevState) => ({
-          ...prevState,
-          content: newContent,
-          editedStatus: true,
-        }));
-        console.log("Update successful", data);
-      })
-      .catch((error) => {
-        console.error("Error updating the thread:", error);
-      });
-  };
-
   if (!thread) return <p>No thread found</p>;
 
   const truncatedContent = truncate
@@ -157,15 +132,8 @@ const ThreadComponent = ({ thread, onDelete, truncate }) => {
         {thread.title}
       </h1>
 
-      {user && user._id === thread.userId._id ? (
-        <EditableContent
-          content={truncatedContent}
-          onSave={handleContentSave}
-          threadId={thread._id}
-        />
-      ) : (
-        <p className={styles.content}>{truncatedContent}</p>
-      )}
+      <p className={styles.content}>{truncatedContent}</p>
+
       <div className={styles.buttonsContainer}>
         <button
           className={`${styles.buttonBase} ${

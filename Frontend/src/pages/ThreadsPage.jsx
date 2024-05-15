@@ -3,7 +3,9 @@ import ThreadComponent from "../components/ThreadComponent";
 import { Link } from "react-router-dom";
 import styles from "../components/ThreadsPage.module.scss";
 import FilterDropdown from "../components/FilterDropdown";
-
+import LogoutButton from "../components/LogoutButton";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../Contexts/UserContext";
 const ThreadsPage = () => {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,8 +13,15 @@ const ThreadsPage = () => {
   const [filter, setFilter] = useState(
     () => localStorage.getItem("filter") || "likesDesc"
   );
-
+  const navigate = useNavigate();
+  const { user } = useUser();
   useEffect(() => {
+    if (!user) {
+      console.log("No user found, redirecting to login page.");
+      navigate("/");
+      return;
+    }
+
     const fetchThreads = async () => {
       try {
         const response = await fetch("http://localhost:3000/get/threads");
@@ -125,6 +134,7 @@ const ThreadsPage = () => {
             Create new thread
           </Link>
         </button>
+        <LogoutButton />
       </div>
 
       <div className={styles.threadsListContainer}>
