@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { format } from "date-fns";
 import { useUser } from "../Contexts/UserContext";
 import styles from "./Comment.module.scss";
-import EditableContent from "./EditableContent";
 import InputField from "./InputField";
 
 const Comment = ({ comment, onDelete, onSave }) => {
@@ -152,7 +151,7 @@ const Comment = ({ comment, onDelete, onSave }) => {
   return (
     <div className={styles.comment}>
       <div>
-        <strong>{comment.userId.name}</strong> -{" "}
+        <strong>{comment.userId.name}</strong>
         <span style={{ opacity: 0.5, fontSize: "13px" }}>
           {format(new Date(comment.createdDate), "dd/MM/yyyy")}
         </span>
