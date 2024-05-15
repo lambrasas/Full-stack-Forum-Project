@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ViewSingleThreadComponent from "../components/ViewSingleThreadComponent";
 import { Link } from "react-router-dom";
 import CreateComment from "../components/CreateComment";
 import Comment from "../components/Comment";
 import styles from "../components/ViewThreadPage.module.scss";
-
+import { useUser } from "../Contexts/UserContext";
 const ViewThreadPage = () => {
   const { threadId } = useParams();
   const [thread, setThread] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
+    if (!user) {
+      console.log("No user found, redirecting to login page.");
+      navigate("/");
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const threadResponse = await fetch(

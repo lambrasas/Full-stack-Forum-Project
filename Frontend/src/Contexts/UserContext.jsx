@@ -21,6 +21,7 @@ export const UserProvider = ({ children }) => {
       if (response.ok) {
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
+        console.log("User logged in:", userData);
         return true;
       } else {
         throw new Error("Login failed");
