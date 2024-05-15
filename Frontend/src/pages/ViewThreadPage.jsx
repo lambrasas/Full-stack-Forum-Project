@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import CreateComment from "../components/CreateComment";
 import Comment from "../components/Comment";
 import styles from "../components/ViewThreadPage.module.scss";
+
 const ViewThreadPage = () => {
   const { threadId } = useParams();
   const [thread, setThread] = useState(null);
@@ -47,17 +48,29 @@ const ViewThreadPage = () => {
 
     fetchData();
   }, [threadId]);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (!thread) return <p>No thread found</p>;
+
   const handleCommentAdded = (newComment) => {
     setComments((prevComments) => [newComment, ...prevComments]);
   };
+
   const handleCommentDelete = (commentId) => {
     setComments((currentComments) =>
       currentComments.filter((c) => c._id !== commentId)
     );
   };
+
+  const handleCommentSave = (updatedComment) => {
+    setComments((currentComments) =>
+      currentComments.map((c) =>
+        c._id === updatedComment._id ? updatedComment : c
+      )
+    );
+  };
+
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -91,6 +104,7 @@ const ViewThreadPage = () => {
                 key={comment._id}
                 comment={comment}
                 onDelete={handleCommentDelete}
+                onSave={handleCommentSave}
               />
             ))}
           </div>

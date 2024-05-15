@@ -67,7 +67,18 @@ const CreateComment = ({ threadId, onCommentAdded }) => {
         placeholder={"What is on your mind?"}
         style={{ width: "100%", margin: "10px 0" }}
       />
-      <button type="submit">Post Comment</button>
+      <button
+        style={{
+          color: "white",
+          background: "#7299e1",
+          padding: "5px",
+          borderRadius: "5px",
+          border: "none",
+        }}
+        type="submit"
+      >
+        Post Comment
+      </button>
     </form>
   );
 };
