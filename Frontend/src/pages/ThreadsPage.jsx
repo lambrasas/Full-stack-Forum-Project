@@ -1,14 +1,16 @@
-import { useEffect } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ThreadComponent from "../components/ThreadComponent";
 import { Link } from "react-router-dom";
 import styles from "../components/ThreadsPage.module.scss";
+import FilterDropdown from "../components/FilterDropdown";
+
 const ThreadsPage = () => {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate;
+  const [filter, setFilter] = useState(
+    () => localStorage.getItem("filter") || "likesDesc"
+  );
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -29,15 +31,92 @@ const ThreadsPage = () => {
 
     fetchThreads();
   }, []);
+
   const handleThreadDelete = (threadId) => {
     setThreads(threads.filter((thread) => thread._id !== threadId));
   };
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    localStorage.setItem("filter", newFilter);
+  };
+
+  const getSortedThreads = (threads, filter) => {
+    const sortedThreads = [...threads];
+
+    switch (filter) {
+      case "likesAsc":
+        return sortedThreads.sort((a, b) => {
+          if (a.likes.length === b.likes.length) {
+            return new Date(a.createdDate) - new Date(b.createdDate);
+          }
+          return a.likes.length - b.likes.length;
+        });
+
+      case "likesDesc":
+        return sortedThreads.sort((a, b) => {
+          if (a.likes.length === b.likes.length) {
+            return new Date(b.createdDate) - new Date(a.createdDate);
+          }
+          return b.likes.length - a.likes.length;
+        });
+
+      case "dislikesAsc":
+        return sortedThreads.sort((a, b) => {
+          if (a.dislikes.length === b.dislikes.length) {
+            return new Date(a.createdDate) - new Date(b.createdDate);
+          }
+          return a.dislikes.length - b.dislikes.length;
+        });
+
+      case "dislikesDesc":
+        return sortedThreads.sort((a, b) => {
+          if (a.dislikes.length === b.dislikes.length) {
+            return new Date(b.createdDate) - new Date(a.createdDate);
+          }
+          return b.dislikes.length - a.dislikes.length;
+        });
+
+      case "repliesAsc":
+        return sortedThreads.sort((a, b) => {
+          if (a.comments.length === b.comments.length) {
+            return new Date(a.createdDate) - new Date(b.createdDate);
+          }
+          return a.comments.length - b.comments.length;
+        });
+
+      case "repliesDesc":
+        return sortedThreads.sort((a, b) => {
+          if (a.comments.length === b.comments.length) {
+            return new Date(b.createdDate) - new Date(a.createdDate);
+          }
+          return b.comments.length - a.comments.length;
+        });
+
+      case "newest":
+        return sortedThreads.sort(
+          (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
+        );
+
+      case "oldest":
+        return sortedThreads.sort(
+          (a, b) => new Date(a.createdDate) - new Date(b.createdDate)
+        );
+
+      default:
+        return sortedThreads;
+    }
+  };
+
+  const sortedThreads = getSortedThreads(threads, filter);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div className={styles.threadsPageContainer}>
       <div className={styles.createThreadButtonContainer}>
+        <FilterDropdown filter={filter} onChange={handleFilterChange} />
         <button className={styles.link}>
           <Link
             style={{ color: "white", fontWeight: "600" }}
@@ -47,12 +126,14 @@ const ThreadsPage = () => {
           </Link>
         </button>
       </div>
+
       <div className={styles.threadsListContainer}>
-        {threads.map((thread) => (
+        {sortedThreads.map((thread) => (
           <ThreadComponent
             key={thread._id}
             thread={thread}
             onDelete={handleThreadDelete}
+            truncate={true}
           />
         ))}
       </div>

@@ -14,10 +14,10 @@
 }
 .createThreadButtonContainer {
   display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
+  justify-content: space-evenly;
+  align-items: center;
   width: 100%;
-  margin: 10px 50px 0 0;
+  margin: 10px 0;
 }
 .link {
   color: white;
@@ -25,4 +25,5 @@
   border-radius: 5px;
   border: none;
   padding: 10px;
+  text-decoration: none;
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import InputField from "./InputField";
-const EditableContent = ({ content, onSave, threadId, maxLength = 500 }) => {
+const EditableContent = ({ content, onSave, threadId, maxLength = 1000 }) => {
   const [editContent, setEditContent] = useState(content);
   const [isEditing, setIsEditing] = useState(false);
 

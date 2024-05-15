@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { useUser } from "../Contexts/UserContext";
 import styles from "./Comment.module.scss";
 import EditableContent from "./EditableContent";
+import InputField from "./InputField";
 
 const Comment = ({ comment, onDelete, onSave }) => {
   const { user } = useUser();
@@ -111,6 +112,8 @@ const Comment = ({ comment, onDelete, onSave }) => {
         console.error("Error updating comment:", error);
         alert("Failed to update comment.");
       }
+    } else {
+      setIsEditing(false);
     }
   };
 
@@ -145,6 +148,7 @@ const Comment = ({ comment, onDelete, onSave }) => {
       }
     }
   };
+
   return (
     <div className={styles.comment}>
       <div>
@@ -164,9 +168,11 @@ const Comment = ({ comment, onDelete, onSave }) => {
           </span>
         )}
         {isEditing ? (
-          <EditableContent
-            content={comment.content}
-            onSave={handleSave}
+          <InputField
+            label="Edit Comment"
+            inputType="textarea"
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
             maxLength={500}
           />
         ) : (
@@ -214,17 +220,59 @@ const Comment = ({ comment, onDelete, onSave }) => {
 
         <div>
           {user && user._id === comment.userId._id && (
-            <button
-              onClick={handleDelete}
-              style={{
-                backgroundColor: "red",
-                border: "none",
-                padding: "5px",
-                borderRadius: "5px",
-              }}
-            >
-              Delete
-            </button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    style={{
+                      backgroundColor: "blue",
+                      border: "none",
+                      padding: "5px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    style={{
+                      backgroundColor: "gray",
+                      border: "none",
+                      padding: "5px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleEdit}
+                    style={{
+                      backgroundColor: "blue",
+                      border: "none",
+                      padding: "5px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    style={{
+                      backgroundColor: "red",
+                      border: "none",
+                      padding: "5px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>

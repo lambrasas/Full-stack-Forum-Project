@@ -350,12 +350,18 @@ app.patch("/comments/:id/edit", async (req, res) => {
     comment.editedStatus = true;
     await comment.save();
 
-    res.json(comment);
+    const updatedComment = await Comment.findById(id).populate(
+      "userId",
+      "name _id"
+    );
+
+    res.json(updatedComment);
   } catch (error) {
     console.error("Failed to edit comment:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 app.listen(port, () => {
   console.log(`Server is running on ${port} port`);
 });

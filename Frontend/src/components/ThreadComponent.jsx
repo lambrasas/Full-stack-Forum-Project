@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
 import { useUser } from "../Contexts/UserContext";
-import styles from "../components/ThreadComponent.module.scss";
+import styles from "./ThreadComponent.module.scss";
 import EditableContent from "./EditableContent";
+import truncateText from "./truncateText";
+import FilterDropdown from "./FilterDropdown";
 
-const ThreadComponent = ({ thread, onDelete }) => {
+const ThreadComponent = ({ thread, onDelete, truncate }) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [threadState, setThreadState] = useState({
@@ -17,11 +19,23 @@ const ThreadComponent = ({ thread, onDelete }) => {
     userDisliked: thread.dislikes.includes(user?._id),
     editedStatus: thread.editedStatus,
   });
-
+  const [comments, setComments] = useState([]);
   useEffect(() => {
-    console.log(thread);
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/comments/${thread._id}`
+        );
+        const data = await response.json();
+        setComments(data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+    fetchComments();
+  }, [thread]);
+  useEffect(() => {
     setThreadState((prevState) => ({
-      ...thread,
       ...prevState,
       content: thread.content,
       likes: thread.likes,
@@ -116,6 +130,10 @@ const ThreadComponent = ({ thread, onDelete }) => {
 
   if (!thread) return <p>No thread found</p>;
 
+  const truncatedContent = truncate
+    ? truncateText(threadState.content, 150)
+    : threadState.content;
+
   return (
     <div className={styles.threadCard}>
       <div className={styles.nameDateContainer}>
@@ -141,12 +159,12 @@ const ThreadComponent = ({ thread, onDelete }) => {
 
       {user && user._id === thread.userId._id ? (
         <EditableContent
-          content={threadState.content}
+          content={truncatedContent}
           onSave={handleContentSave}
           threadId={thread._id}
         />
       ) : (
-        <p className={styles.content}>{threadState.content}</p>
+        <p className={styles.content}>{truncatedContent}</p>
       )}
       <div className={styles.buttonsContainer}>
         <button
@@ -200,5 +218,7 @@ ThreadComponent.propTypes = {
     editedStatus: PropTypes.bool,
   }).isRequired,
   onDelete: PropTypes.func.isRequired,
+  truncate: PropTypes.bool,
 };
+
 export default ThreadComponent;
