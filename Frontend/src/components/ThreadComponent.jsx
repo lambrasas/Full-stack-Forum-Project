@@ -102,7 +102,6 @@ const ThreadComponent = ({ thread, onDelete, truncate }) => {
       }
     }
   };
-
   if (!thread) return <p>No thread found</p>;
 
   const truncatedContent = truncate
